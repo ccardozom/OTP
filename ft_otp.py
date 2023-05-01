@@ -1,14 +1,14 @@
+# fuente principal: https://www.rfc-editor.org/rfc/rfc4226
+# informacion que añadido a la fuente principal se obtiene más lógica 
+#   https://www.rfc-editor.org/rfc/rfc6238
+#   https://www.rfc-editor.org/rfc/rfc2104
+
+
+import argparse
+import hashlib
+import hmac
 import time
 import math
-import base64
-import hmac
-from hashlib import sha1
-time_step = 30
-hex_array_size = 16
-key = b"acin ofel eTno icad nuF"
-
-
-""" import argparse
 
 parser = argparse.ArgumentParser(description="Generador de contraseñas a partir de un hexadecimal")
 parser.add_argument("hex_key", help="Clave hexadecimal de al menos 64 caracteres")
@@ -21,40 +21,40 @@ print(params.hex_key)
 print(params.save_hex_key)
 print(params.new_key)
 
-params = parser.parse_args() """
+params = parser.parse_args()
 
-def get_number_from_time():
-    time_in_seconds = time.time()
-    number_of_step = time_in_seconds / time_step
-    return math.floor(number_of_step)
+def int_a_byte(numero, longitud):
+    """Convierte un número entero en una cadena de bytes con una longitud específica"""
+    return numero.to_bytes(longitud, byteorder='big')
 
+def byte_a_int(cadena_bytes):
+    """Convierte una cadena de bytes en un número entero"""
+    return int.from_bytes(cadena_bytes, byteorder='big')
 
-""" def str_add_zero(str, new_len, value):
-    return value*(new_len - len(str)) + str
+def generar_valor_totp(clave_secreta):
+    """Genera un valor TOTP a partir de una clave secreta"""
+    ts_number = math.floor(time.time() / 30)
+    clave = clave_secreta.encode()
+    mensaje = int_a_byte(ts_number, 8)
+    valor_hmac = hmac.new(clave, mensaje, hashlib.sha1).digest()
+    offset = (valor_hmac[-1]) & 0xf
+    key_of_set = byte_a_int(valor_hmac[offset:offset+4]) & 0x7fffffff
+    final_key = '{:06d}'.format(key_of_set % 10 ** 6)
+    print()
+    print(f"ts_number: {ts_number}")
+    print(f"clave: {clave}")
+    print(f"mensaje: {mensaje}")
+    print(f"valor_hmac: {valor_hmac}")
+    print(f"offset: {offset}")
+    print(f"codigo1: {key_of_set}")
+    print(f"codigo2: {final_key}")
+    
+    return final_key
 
-def create_array(str, elem_size):
-    return [str[i:i+elem_size] for i in range(0, len(str), elem_size)] """
-
-ts_number = get_number_from_time()
-msj = "hola que tal"
-hex_msj = msj.encode().hex() #esto es solo para prueba de concepto, se supone que nos pasan el hexadecimal del mensaje
-
-msj_bytearray = bytearray.fromhex(hex_msj)
-
-number = ts_number.to_bytes(8, byteorder='big', signed=False)
-
-hashed = hmac.new(msj_bytearray, number ,sha1) #key: esto tiene que ser un bytesarray, hex_mej: tambien tiene que ser un bytesarray, sha1: el tipo de encriptacion que vamos a utilizar para generar el hash
-
-
-hex_hash = hashed.digest().hex()
-print(hex_hash)
-
-lista_pares = []
-[lista_pares.append(hex_hash[i:i+2]) for i in range(0, len(hex_hash), 2)]  
-
-index = lista_pares[-1][-1]
-for_bits = ord(index)
-
-print(index)
-print(for_bits)
-#index = int(hex_hash[-1])
+hex_key = "4573746520657320656c20746578746f20706172612067656e6572617220656c2068657861646563696d616c"
+key_decode = bytes.fromhex(hex_key)
+print(f"key_decode: {key_decode}")
+clave_secreta = key_decode.decode() # reemplazar por tu propia clave secreta
+print(f"clave_secreta: {clave_secreta}")
+valor_totp = generar_valor_totp(clave_secreta)
+print('Tu código TOTP es:', valor_totp)

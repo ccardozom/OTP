@@ -41,14 +41,14 @@ def generar_valor_totp(clave_secreta):
     offset = (valor_hmac[-1]) & 0xf
     key_of_set = byte_a_int(valor_hmac[offset:offset+4]) & 0x7fffffff
     final_key = '{:06d}'.format(key_of_set % 10 ** 6)
-    print()
+    ''' print()
     print(f"ts_number: {ts_number}")
     print(f"clave: {clave}")
     print(f"mensaje: {mensaje}")
     print(f"valor_hmac: {valor_hmac}")
     print(f"offset: {offset}")
     print(f"key_of_set: {key_of_set}")
-    print(f"final_key: {final_key}")
+    print(f"final_key: {final_key}") '''
     
     return final_key
 
@@ -60,22 +60,22 @@ if __name__ == '__main__':
                 hex_key = f.read()
         except:
             hex_key = param1
-        if regex_hex.match(hex_key):
-            if (len(hex_key) >= 64):
-                print(hex_key)
-                f = Fernet(clave)
-                encriptado = f.encrypt(hex_key.encode())
-                print(encriptado)
-                with open("ft_opt.key","wb") as file:
-                    file.write(encriptado)
+        if regex_hex.match(hex_key ) and len(hex_key) % 2 == 0 and len(hex_key) >= 64:
+            print(hex_key)
+            f = Fernet(clave)
+            encriptado = f.encrypt(hex_key.encode())
+            print(encriptado)
+            with open("ft_opt.key","wb") as file:
+                file.write(encriptado)
+            print("Se ha generado el archivo encriptado correctamente.")
         else:
-            print("No es hexadecimal")
+            print("No es hexadecimal o tiene menos de 64 caracteres")
     elif params.new_key:
         hex_key = ""
         try:
-            print(param1)
             hex_key = open(param1, 'rb').read()
-            hex_key = hex_key.decode()
+            f = Fernet(clave)
+            hex_key = f.decrypt(hex_key).decode()
             key_decode = bytes.fromhex(hex_key)
             clave_secreta = key_decode.decode() # reemplazar por tu propia clave secreta
             print(f"clave_secreta: {clave_secreta}")

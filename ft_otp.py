@@ -10,9 +10,11 @@ import hmac
 import time
 import math
 import re
+from cryptography.fernet import Fernet
 
 regex_hex = re.compile(r'^[0-9a-fA-F]+$')
-print(regex_hex)
+clave = b'nJg9XY8gSXYRtCUOqvoVfgQD7NfEpBSTWF-K8OjwjVY='
+
 parser = argparse.ArgumentParser(description="Generador de contraseñas a partir de un hexadecimal")
 parser.add_argument("hex_key", help="Clave hexadecimal de al menos 64 caracteres")
 parser.add_argument("-g", dest="save_hex_key", action="store_true" , help="Guarda la clave hexadecimal en un archivo llamado ft_opt.key")
@@ -21,12 +23,6 @@ parser.add_argument("-k", dest="new_key", action="store_true", help="Genera una 
 params = parser.parse_args()
 
 param1 = params.hex_key
-print(params.save_hex_key)
-print(params.new_key)
-
-hex_array = []
-
-params = parser.parse_args()
 
 def int_a_byte(numero, longitud):
     """Convierte un número entero en una cadena de bytes con una longitud específica"""
@@ -57,24 +53,33 @@ def generar_valor_totp(clave_secreta):
     return final_key
 
 if __name__ == '__main__':
-    hex_key = ""
-    print("esto debe ser regex_hex: ",regex_hex)
-    try:
-        with open(param1, 'r') as f:
-            hex_key = f.read()
-            print(hex_key)
-        #hex_key = readline() "4573746520657320656c20746578746f20706172612067656e6572617220656c2068657861646563696d616c"
-    except:
-        hex_key = param1
-    print("Esto es hexadecimal: ",hex_key)
-    if regex_hex.match(hex_key):
-        print("Es hexadecimal")
-        if (len(hex_key) >= 64):
+    if params.save_hex_key:
+        hex_key = ""
+        try:
+            with open(param1, 'r') as f:
+                hex_key = f.read()
+        except:
+            hex_key = param1
+        if regex_hex.match(hex_key):
+            if (len(hex_key) >= 64):
+                print(hex_key)
+                f = Fernet(clave)
+                encriptado = f.encrypt(hex_key.encode())
+                print(encriptado)
+                with open("ft_opt.key","wb") as file:
+                    file.write(encriptado)
+        else:
+            print("No es hexadecimal")
+    elif params.new_key:
+        hex_key = ""
+        try:
+            print(param1)
+            hex_key = open(param1, 'rb').read()
+            hex_key = hex_key.decode()
             key_decode = bytes.fromhex(hex_key)
-            print(f"key_decode: {key_decode}")
             clave_secreta = key_decode.decode() # reemplazar por tu propia clave secreta
             print(f"clave_secreta: {clave_secreta}")
             valor_totp = generar_valor_totp(clave_secreta)
             print('Tu código TOTP es:', valor_totp)
-    else:
-        print("No es hexadecimal")
+        except:
+            print("No se puede leer y generar la clave")
